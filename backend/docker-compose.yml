@@ -1,0 +1,10 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    container_name: postgres-container
+    ports:
+      - "5432:5432"
+    environment:
+      - PGPASSOWRD=pandamansecretpassword
+      - DATABASE_HOST=localhost

@@ -3,9 +3,11 @@ let
   pkgs = import sources.nixpkgs { };
 in
   pkgs.mkShell {
-    buildInputs = [
-      pkgs.nodejs
-      pkgs.haskellPackages.postgrest
+    buildInputs = with pkgs; [
+      nodejs
+      diesel-cli
+      rustup
+      docker-compose
     ];
   }
   
