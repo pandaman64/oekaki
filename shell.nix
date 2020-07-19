@@ -8,6 +8,7 @@ in
       diesel-cli
       rustup
       docker-compose
+      rust-analyzer
     ];
   }
   

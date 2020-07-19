@@ -101,6 +101,7 @@ version = "0.1.0"
 dependencies = [
  "diesel",
  "rocket",
+ "rocket_contrib",
  "serde",
 ]
 
@@ -940,6 +941,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocket_contrib"
+version = "0.5.0-dev"
+source = "git+https://github.com/SergioBenitez/Rocket.git?branch=master#0909ba2ef60d0d512481796598a8aba04e7cd55c"
+dependencies = [
+ "log",
+ "rocket",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "rocket_http"
 version = "0.5.0-dev"
 source = "git+https://github.com/SergioBenitez/Rocket.git?branch=master#0909ba2ef60d0d512481796598a8aba04e7cd55c"
@@ -995,6 +1008,9 @@ name = "serde"
 version = "1.0.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5317f7588f0a5078ee60ef675ef96735a1442132dc645eb1d12c018620ed8cd3"
+dependencies = [
+ "serde_derive",
+]
 
 [[package]]
 name = "serde_derive"

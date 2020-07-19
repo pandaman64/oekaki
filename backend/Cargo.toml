@@ -9,4 +9,5 @@ edition = "2018"
 [dependencies]
 diesel = { version = "1.4.5", default-features = false, features = ["postgres"] }
 rocket = { git = "https://github.com/SergioBenitez/Rocket.git", branch = "master" }
-serde = "1.0.114"
+rocket_contrib = { git = "https://github.com/SergioBenitez/Rocket.git", branch = "master" }
+serde = { version = "1.0.114", features = ["derive"] }
