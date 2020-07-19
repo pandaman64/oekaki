@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useReducer, ReactElement } from 'react'
+import axios from 'axios'
 
 type MouseEvent = React.MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>
 
@@ -17,7 +18,6 @@ function computeMousePosition(e: MouseEvent): Position {
 
 type OekakiState = {
   paths: Position[][]
-  current_path: Position[]
 }
 
 interface StartDraw {
@@ -35,43 +35,50 @@ interface EndDraw {
   pos: Position
 }
 
+type CurrentPath = Position[]
 type Command = StartDraw | Drawing | EndDraw
 
-function updateOekakiState(state: OekakiState, command: Command): OekakiState {
-  switch (command.type) {
-    case 'start':
-      return {
-        ...state,
-        current_path: [command.pos],
+function useDrawTracker(cb: (path: Position[]) => void): [CurrentPath, React.Dispatch<Command>] {
+  function update(state: CurrentPath, command: Command): CurrentPath {
+    switch (command.type) {
+      case "start":
+        return [command.pos]
+      case "drawing": {
+        const ret = state.slice()
+        ret.push(command.pos)
+        return ret
       }
-    case 'drawing': {
-      const current_path = state.current_path.slice()
-      current_path.push(command.pos)
-      return {
-        ...state,
-        current_path,
-      }
-    }
-    case 'end': {
-      const current_path = state.current_path.slice()
-      current_path.push(command.pos)
-      const paths = state.paths.slice()
-      paths.push(current_path)
-      return {
-        paths,
-        current_path: [],
+      case "end": {
+        const post_state = state.slice()
+        post_state.push(command.pos)
+        cb(post_state)
+        return []
       }
     }
   }
+
+  return useReducer(update, [])
 }
 
-export default function OekakiCanvas(): ReactElement {
+type OekakiCanvasProps = {
+  room_id: number,
+}
+
+export default function OekakiCanvas({ room_id }: OekakiCanvasProps): ReactElement {
   const canvas = useRef<HTMLCanvasElement>(null)
   const [drawing, setDrawing] = useState<boolean>(false)
-  const [oekakiState, dispatcher] = useReducer(updateOekakiState, {
-    paths: [],
-    current_path: [],
+  const [oekakiState, setOekakiState] = useState<OekakiState>({
+    paths: []
   })
+  const [currentPath, dispatcher] = useDrawTracker((p) => {
+    async function postNewPath() {
+      await axios.post(`/api/rooms/${room_id}/new_path`, {
+        path: p
+      })
+    }
+
+    postNewPath()
+  });
 
   // TODO: specify data dependency
   useEffect(() => {
@@ -96,15 +103,33 @@ export default function OekakiCanvas(): ReactElement {
 
         // draw current path
         ctx.strokeStyle = 'red'
-        if (oekakiState.current_path.length > 0) {
+        if (currentPath.length > 0) {
           ctx.beginPath()
-          ctx.moveTo(oekakiState.current_path[0].x, oekakiState.current_path[0].y)
-          oekakiState.current_path.forEach((pos) => {
+          ctx.moveTo(currentPath[0].x, currentPath[0].y)
+          currentPath.forEach((pos) => {
             ctx.lineTo(pos.x, pos.y)
           })
           ctx.stroke()
         }
       }
+    }
+  })
+
+  useEffect(() => {
+    async function runApi() {
+      const res = await axios.get(`/api/rooms/${room_id}/path`)
+      const paths: Position[][] = res.data
+      setOekakiState({
+        paths,
+      })
+    }
+    
+    const id = setInterval(() => {
+      runApi()
+    }, 100)
+
+    return () => {
+      clearInterval(id)
     }
   })
 

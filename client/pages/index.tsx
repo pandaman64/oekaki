@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react'
+import React, { ReactElement, useState, useEffect } from 'react'
 import Head from 'next/head'
 import OekakiCanvas from '../components/canvas'
 
@@ -15,7 +15,7 @@ export default function Home(): ReactElement {
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
 
-        <OekakiCanvas />
+        <OekakiCanvas room_id={1}/>
       </main>
 
       <footer>
