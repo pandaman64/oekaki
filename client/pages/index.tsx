@@ -1,6 +1,6 @@
-import React, { ReactElement, useState, useEffect } from 'react'
+import React, { ReactElement } from 'react'
 import Head from 'next/head'
-import OekakiCanvas from '../components/canvas'
+import Rooms from '../components/rooms'
 
 export default function Home(): ReactElement {
   return (
@@ -11,11 +11,9 @@ export default function Home(): ReactElement {
       </Head>
 
       <main>
-        <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <h1 className="title">Welcome to Oekaki</h1>
 
-        <OekakiCanvas room_id={1}/>
+        <Rooms />
       </main>
 
       <footer>
