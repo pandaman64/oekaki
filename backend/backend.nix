@@ -8,8 +8,8 @@ let
         (self: super:
             {
               rustPlatform = super.makeRustPlatform {
-                rustc = self.latest.rustChannels.beta.rust;
-                cargo = self.latest.rustChannels.beta.rust;
+                rustc = self.latest.rustChannels.stable.rust;
+                cargo = self.latest.rustChannels.stable.rust;
               };
             }
         )
