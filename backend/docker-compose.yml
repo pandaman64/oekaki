@@ -2,7 +2,7 @@ version: "3"
 services:
   db:
     image: postgres
-    container_name: postgres-container
+    container_name: postgres-container-dev
     ports:
       - "5432:5432"
     environment:
