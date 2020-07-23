@@ -19,7 +19,7 @@ let
   let
     baseName = baseNameOf path;
   in
-    baseName == "Cargo.toml" || baseName == "Cargo.lock" || (builtins.match ".*/src.*" path) != null;
+    baseName == "Cargo.toml" || baseName == "Cargo.lock" || (builtins.match "(.*/src.*)|(.*migration.*)" path) != null;
 in
   with pkgs;
   rustPlatform.buildRustPackage rec {
@@ -34,6 +34,6 @@ in
       postgresql
     ];
 
-    cargoSha256 = "19rzj3lzi901qq383lgb22lflczmyw9smzz1nz2p3q8d2i9gfavd";
+    cargoSha256 = "1qkv6i5q060vhdr2sl4x852rvn54l90kx9bpnqbdh90j18qj1mik";
     verifyCargoDeps = true;
   }

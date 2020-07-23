@@ -9,6 +9,7 @@ in
       rustup
       docker-compose
       rust-analyzer
+      postgresql
     ];
   }
   

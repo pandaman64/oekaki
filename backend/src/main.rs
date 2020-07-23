@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate diesel;
 #[macro_use]
+extern crate diesel_migrations;
+#[macro_use]
 extern crate rocket;
 #[macro_use]
 extern crate serde;
@@ -142,8 +144,19 @@ fn get_rooms() -> Json<Vec<i64>> {
     Json(rooms)
 }
 
+fn run_migration() -> Result<(), Box<dyn std::error::Error>> {
+    embed_migrations!();
+
+    let conn = database_connection();
+    embedded_migrations::run(&conn).map_err(Into::into)
+}
+
 #[launch]
 fn rocket() -> rocket::Rocket {
+    while let Err(e) = run_migration() {
+        eprintln!("{:?}", e);
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
     rocket::ignite()
         .mount("/", routes![new_path])
         .mount("/", routes![path])
