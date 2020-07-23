@@ -7,6 +7,7 @@ type Position = {
 }
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+  const api = process.env["BACKEND_URL"]
   switch (req.method) {
     case 'POST': {
       const {
@@ -18,7 +19,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
       const xs = path.map((p) => p.x)
       const ys = path.map((p) => p.y)
 
-      await axios.post(`http://localhost:8000/rooms/${room_id}/new_path`, {
+      await axios.post(`${api}/rooms/${room_id}/new_path`, {
         xs,
         ys,
       })

@@ -7,11 +7,12 @@ type ApiResult = {
 }[]
 
 export default async function (req: NextApiRequest, res: NextApiResponse): Promise<void> {
+  const api = process.env["BACKEND_URL"]
   const {
     query: { room_id },
   } = req
 
-  const result = await axios.get(`http://127.0.0.1:8000/rooms/${room_id}/path`)
+  const result = await axios.get(`${api}/rooms/${room_id}/path`)
   const data: ApiResult = result.data
   const ret = data.map((elem) =>
     elem.xs.map((x, i) => ({

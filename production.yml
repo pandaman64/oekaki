@@ -1,0 +1,28 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    container_name: postgres-container
+    ports:
+      - "5432:5432"
+    environment:
+      - PGPASSOWRD=pandamansecretpassword
+      - DATABASE_HOST=localhost
+  backend:
+    image: oekaki-backend:latest
+    container_name: oekaki-backend
+    environment:
+      - DATABASE_URL=postgres://postgres:pandamansecretpassword@db/
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  client:
+    build: ./client
+    container_name: oekaki-client
+    environment:
+      - BACKEND_URL=http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
