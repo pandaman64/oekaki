@@ -9,6 +9,7 @@ extern crate serde;
 
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use rocket::response::Debug;
 use rocket_contrib::json::Json;
 use uuid::Uuid;
 
@@ -20,36 +21,38 @@ mod schema;
 
 use path::Path;
 
-fn database_connection() -> PgConnection {
-    let url = std::env::var("DATABASE_URL").unwrap();
-    PgConnection::establish(&url).unwrap()
+type Error = Box<dyn std::error::Error + 'static>;
+
+fn database_connection() -> Result<PgConnection, Error> {
+    let url = std::env::var("DATABASE_URL")?;
+    PgConnection::establish(&url).map_err(Into::into)
 }
 
 #[get("/rooms/<room_id>/path")]
-fn path(room_id: i64) -> Json<Vec<Path>> {
-    let conn = database_connection();
+fn path(room_id: i64) -> Result<Json<Vec<Path>>, Debug<Error>> {
+    let conn = database_connection()?;
 
-    Json(
+    Ok(Json(
         schema::paths::table
             .inner_join(schema::draws::table)
             .filter(schema::draws::dsl::room_id.eq(room_id))
             .order(schema::paths::dsl::id.asc())
             .select((schema::paths::dsl::xs, schema::paths::dsl::ys))
             .load(&conn)
-            .unwrap(),
-    )
+            .map_err(Error::from)?,
+    ))
 }
 
 #[post("/rooms/<room_id>/new_path", data = "<data>")]
-fn new_path(room_id: i64, data: Json<Path>) -> &'static str {
+fn new_path(room_id: i64, data: Json<Path>) -> Result<(), Debug<Error>> {
     eprintln!("{:?}", data);
     if data.xs.len() != data.ys.len() {
-        return "invalid";
+        return Err(Debug("invalid data length".into()));
     }
     {
-        let conn = database_connection();
+        let conn = database_connection()?;
 
-        conn.transaction::<(), diesel::result::Error, _>(|| {
+        conn.transaction::<(), Error, _>(|| {
             let path_id: i64 = diesel::insert_into(schema::paths::table)
                 .values(&path::NewPath {
                     xs: &data.xs,
@@ -63,22 +66,22 @@ fn new_path(room_id: i64, data: Json<Path>) -> &'static str {
 
             Ok(())
         })
-        .unwrap();
+        .map_err(Debug::from)?;
     }
 
-    "Hello, world!"
+    Ok(())
 }
 
 #[get("/rooms/<room_id>/operations")]
-fn get_operations(room_id: i64) -> Json<Vec<operation::Operation>> {
-    let conn = database_connection();
+fn get_operations(room_id: i64) -> Result<Json<Vec<operation::Operation>>, Debug<Error>> {
+    let conn = database_connection()?;
 
     let operations = schema::operations::table
         .filter(schema::operations::dsl::room_id.eq(room_id))
         .load::<operation::Operation>(&conn)
-        .unwrap();
+        .map_err(Error::from)?;
 
-    Json(operations)
+    Ok(Json(operations))
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -92,7 +95,7 @@ struct NewOperation {
 }
 
 #[post("/rooms/<room_id>/operations", data = "<data>")]
-fn post_operations(room_id: i64, data: Json<NewOperation>) {
+fn post_operations(room_id: i64, data: Json<NewOperation>) -> Result<(), Debug<Error>> {
     eprintln!("room_id = {}, data = {:?}", room_id, data);
     let NewOperation {
         user_id,
@@ -103,7 +106,7 @@ fn post_operations(room_id: i64, data: Json<NewOperation>) {
         payload,
     } = data.0;
 
-    let conn = database_connection();
+    let conn = database_connection()?;
 
     diesel::insert_into(schema::operations::table)
         .values(&operation::NewOperation {
@@ -116,38 +119,42 @@ fn post_operations(room_id: i64, data: Json<NewOperation>) {
             payload,
         })
         .execute(&conn)
-        .unwrap();
+        .map_err(Error::from)?;
+
+    Ok(())
 }
 
 #[post("/new_room")]
-fn new_room() -> Json<i64> {
+fn new_room() -> Result<Json<i64>, Debug<Error>> {
     use schema::rooms::dsl;
 
-    let conn = database_connection();
+    let conn = database_connection()?;
 
     let room = diesel::insert_into(schema::rooms::table)
         .default_values()
         .returning(dsl::id)
         .get_result::<i64>(&conn)
-        .unwrap();
-    Json(room)
+        .map_err(Error::from)?;
+
+    Ok(Json(room))
 }
 
 #[get("/rooms")]
-fn get_rooms() -> Json<Vec<i64>> {
-    let conn = database_connection();
+fn get_rooms() -> Result<Json<Vec<i64>>, Debug<Error>> {
+    let conn = database_connection()?;
 
     let rooms = schema::rooms::table
         .select(schema::rooms::dsl::id)
         .load::<i64>(&conn)
-        .unwrap();
-    Json(rooms)
+        .map_err(Error::from)?;
+
+    Ok(Json(rooms))
 }
 
-fn run_migration() -> Result<(), Box<dyn std::error::Error>> {
+fn run_migration() -> Result<(), Error> {
     embed_migrations!();
 
-    let conn = database_connection();
+    let conn = database_connection()?;
     embedded_migrations::run(&conn).map_err(Into::into)
 }
 
