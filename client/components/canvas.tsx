@@ -132,28 +132,28 @@ export default function OekakiCanvas({ room_id, width, height }: OekakiCanvasPro
         style={{
           border: 'solid',
         }}
-        onMouseDown={(e) => {
+        onPointerDown={(e) => {
           dispatcher({
             type: 'start',
             pos: computeMousePosition(e),
           })
           setDrawing(true)
         }}
-        onMouseUp={(e) => {
+        onPointerUp={(e) => {
           dispatcher({
             type: 'end',
             pos: computeMousePosition(e),
           })
           setDrawing(false)
         }}
-        onMouseLeave={(e) => {
+        onPointerLeave={(e) => {
           dispatcher({
             type: 'end',
             pos: computeMousePosition(e),
           })
           setDrawing(false)
         }}
-        onMouseMove={(e) => {
+        onPointerMove={(e) => {
           if (drawing) {
             dispatcher({
               type: 'drawing',
