@@ -52,7 +52,8 @@ export default function Thumbnail({
     <div
       style={{
         border: 'solid',
-        borderRadius: '10px',
+        borderRadius: 10,
+        margin: 20,
       }}
       onClick={onClick}
     >
