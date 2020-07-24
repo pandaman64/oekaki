@@ -131,6 +131,7 @@ export default function OekakiCanvas({ room_id, width, height }: OekakiCanvasPro
         height={height.toString()}
         style={{
           border: 'solid',
+          touchAction: 'none',
         }}
         onPointerDown={(e) => {
           dispatcher({
