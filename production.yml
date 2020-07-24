@@ -9,7 +9,7 @@ services:
       - PGPASSOWRD=pandamansecretpassword
       - DATABASE_HOST=localhost
   backend:
-    image: oekaki-backend:latest
+    image: pandaman64/oekaki-backend:latest
     container_name: oekaki-backend
     environment:
       - DATABASE_URL=postgres://postgres:pandamansecretpassword@db/
@@ -18,7 +18,7 @@ services:
     depends_on:
       - db
   client:
-    build: ./client
+    image: pandaman64/oekaki-client:latest
     container_name: oekaki-client
     environment:
       - BACKEND_URL=http://backend:8000

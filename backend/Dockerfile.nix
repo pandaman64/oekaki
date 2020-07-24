@@ -5,7 +5,7 @@ let
 in
   with pkgs;
   dockerTools.buildImage {
-    name = "oekaki-backend";
+    name = "pandaman64/oekaki-backend";
     tag = "latest";
 
     contents = backend;
