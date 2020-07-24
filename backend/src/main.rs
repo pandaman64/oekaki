@@ -160,10 +160,21 @@ fn run_migration() -> Result<(), Error> {
 
 #[launch]
 fn rocket() -> rocket::Rocket {
-    while let Err(e) = run_migration() {
-        eprintln!("{:?}", e);
-        std::thread::sleep(std::time::Duration::from_secs(1));
+    let mut ok = false;
+    for _ in 0..10 {
+        match run_migration() {
+            Ok(()) => {
+                ok = true;
+                break;
+            },
+            Err(e) => {
+                eprintln!("{:?}", e);
+                std::thread::sleep(std::time::Duration::from_secs(1));
+            }
+        }
     }
+    assert!(ok);
+
     rocket::ignite()
         .mount("/", routes![new_path])
         .mount("/", routes![path])
