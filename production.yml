@@ -6,13 +6,14 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - PGPASSOWRD=pandamansecretpassword
+      - POSTGRES_PASSWORD=pandamansecretpassword
+      - POSTGRES_DB=oekaki
       - DATABASE_HOST=localhost
   backend:
     image: pandaman64/oekaki-backend:latest
     container_name: oekaki-backend
     environment:
-      - DATABASE_URL=postgres://postgres:pandamansecretpassword@db/
+      - DATABASE_URL=postgres://postgres:pandamansecretpassword@db/oekaki
     ports:
       - "8000:8000"
     depends_on:
