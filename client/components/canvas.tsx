@@ -17,10 +17,6 @@ function computeMousePosition(e: MouseEvent): Position {
   }
 }
 
-type OekakiState = {
-  paths: Position[][]
-}
-
 interface StartDraw {
   type: 'start'
   pos: Position
@@ -124,45 +120,43 @@ export default function OekakiCanvas({ room_id, width, height }: OekakiCanvasPro
   })
 
   return (
-    <div>
-      <canvas
-        ref={canvas}
-        width={width.toString()}
-        height={height.toString()}
-        style={{
-          border: 'solid',
-          touchAction: 'none',
-        }}
-        onPointerDown={(e) => {
+    <canvas
+      ref={canvas}
+      width={width.toString()}
+      height={height.toString()}
+      style={{
+        border: '1px solid',
+        touchAction: 'none',
+      }}
+      onPointerDown={(e) => {
+        dispatcher({
+          type: 'start',
+          pos: computeMousePosition(e),
+        })
+        setDrawing(true)
+      }}
+      onPointerUp={(e) => {
+        dispatcher({
+          type: 'end',
+          pos: computeMousePosition(e),
+        })
+        setDrawing(false)
+      }}
+      onPointerLeave={(e) => {
+        dispatcher({
+          type: 'end',
+          pos: computeMousePosition(e),
+        })
+        setDrawing(false)
+      }}
+      onPointerMove={(e) => {
+        if (drawing) {
           dispatcher({
-            type: 'start',
+            type: 'drawing',
             pos: computeMousePosition(e),
           })
-          setDrawing(true)
-        }}
-        onPointerUp={(e) => {
-          dispatcher({
-            type: 'end',
-            pos: computeMousePosition(e),
-          })
-          setDrawing(false)
-        }}
-        onPointerLeave={(e) => {
-          dispatcher({
-            type: 'end',
-            pos: computeMousePosition(e),
-          })
-          setDrawing(false)
-        }}
-        onPointerMove={(e) => {
-          if (drawing) {
-            dispatcher({
-              type: 'drawing',
-              pos: computeMousePosition(e),
-            })
-          }
-        }}
-      ></canvas>
-    </div>
+        }
+      }}
+    ></canvas>
   )
 }
