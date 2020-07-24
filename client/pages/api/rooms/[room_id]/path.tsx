@@ -7,7 +7,7 @@ type ApiResult = {
 }[]
 
 export default async function (req: NextApiRequest, res: NextApiResponse): Promise<void> {
-  const api = process.env["BACKEND_URL"]
+  const api = process.env['BACKEND_URL']
   const {
     query: { room_id },
   } = req
