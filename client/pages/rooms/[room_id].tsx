@@ -3,11 +3,30 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import OekakiCanvas from '../../components/canvas'
 
+function useWindowResize(): [number, number] {
+  const [dimensions, setDimensions] = useState<[number, number]>([0, 0])
+
+  useEffect(() => {
+    function listener() {
+      setDimensions([window.innerWidth, window.innerHeight])
+      console.log(window.innerWidth)
+      console.log(window.innerHeight)
+    }
+    window.addEventListener('resize', listener)
+    return () => {
+      window.removeEventListener('resize', listener)
+    }
+  })
+
+  return dimensions
+}
+
 export default function Room(): ReactElement {
   const router = useRouter()
   const container = useRef<HTMLDivElement>(null)
   const [canvasWidth, setCanvasWidth] = useState(640)
   const [canvasHeight, setCanvasHeight] = useState(480)
+  const windowDimensions = useWindowResize()
 
   useEffect(() => {
     if (container.current != null) {
@@ -20,7 +39,7 @@ export default function Room(): ReactElement {
       setCanvasWidth(X * ratio)
       setCanvasHeight(Y * ratio)
     }
-  })
+  }, [container, windowDimensions])
 
   return (
     <div
@@ -48,7 +67,8 @@ export default function Room(): ReactElement {
         />
       </div>
       <style global jsx>{`
-        html, body {
+        html,
+        body {
           margin: 0;
         }
       `}</style>
