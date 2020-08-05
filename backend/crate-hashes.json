@@ -1,0 +1,12 @@
+{
+  "devise 0.3.0 (git+https://github.com/SergioBenitez/Devise.git?rev=1e42a2691#1e42a2691ef9934a446b8ed0ca1c4c8cf283f8bf)": "0nlzb5sqpf3m0gbkddcavymhkyy020ghvak95mrfv16ivlmldaqm",
+  "devise_codegen 0.3.0 (git+https://github.com/SergioBenitez/Devise.git?rev=1e42a2691#1e42a2691ef9934a446b8ed0ca1c4c8cf283f8bf)": "0nlzb5sqpf3m0gbkddcavymhkyy020ghvak95mrfv16ivlmldaqm",
+  "devise_core 0.3.0 (git+https://github.com/SergioBenitez/Devise.git?rev=1e42a2691#1e42a2691ef9934a446b8ed0ca1c4c8cf283f8bf)": "0nlzb5sqpf3m0gbkddcavymhkyy020ghvak95mrfv16ivlmldaqm",
+  "pear 0.2.0-dev (git+https://github.com/SergioBenitez/Pear.git?rev=4b68055#4b680556063568a42fcd4328335cdfdf7608be49)": "0488h81g7pwmqc6ji13qq5am3qdav0z7spygxzmicyww1zlygzp6",
+  "pear_codegen 0.2.0-dev (git+https://github.com/SergioBenitez/Pear.git?rev=4b68055#4b680556063568a42fcd4328335cdfdf7608be49)": "0488h81g7pwmqc6ji13qq5am3qdav0z7spygxzmicyww1zlygzp6",
+  "proc-macro2-diagnostics 0.1.0 (git+https://github.com/SergioBenitez/proc-macro2-diagnostics.git?rev=13fbb43#13fbb43db72034b6f9660a9b00e338cebd8dcf44)": "01gqh9wv9vk9gh1z8l5xkd7s7znf30ar5937vcn15p9hflilk77k",
+  "rocket 0.5.0-dev (git+https://github.com/SergioBenitez/Rocket.git?branch=master#45b4436ed3a7ab913d96c2b69ee4df7fd8c0c618)": "0w1xqppv4vg0n9jkzhaj7sgig8scrs5zccccx4skffyzpa86ghmp",
+  "rocket_codegen 0.5.0-dev (git+https://github.com/SergioBenitez/Rocket.git?branch=master#45b4436ed3a7ab913d96c2b69ee4df7fd8c0c618)": "0w1xqppv4vg0n9jkzhaj7sgig8scrs5zccccx4skffyzpa86ghmp",
+  "rocket_contrib 0.5.0-dev (git+https://github.com/SergioBenitez/Rocket.git?branch=master#45b4436ed3a7ab913d96c2b69ee4df7fd8c0c618)": "0w1xqppv4vg0n9jkzhaj7sgig8scrs5zccccx4skffyzpa86ghmp",
+  "rocket_http 0.5.0-dev (git+https://github.com/SergioBenitez/Rocket.git?branch=master#45b4436ed3a7ab913d96c2b69ee4df7fd8c0c618)": "0w1xqppv4vg0n9jkzhaj7sgig8scrs5zccccx4skffyzpa86ghmp"
+}

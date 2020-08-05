@@ -1,0 +1,12 @@
+--- Cargo.nix	2020-08-05 16:55:35.624413372 +0900
++++ Cargo.nix.mod	2020-08-05 16:57:29.613285052 +0900
+@@ -4043,6 +4043,9 @@
+      This corresponds roughly to what buildRustCrate is setting.
+   */
+   defaultTarget = {
++    cargo_web = false;
++    feature = "";
++
+     unix = true;
+     windows = false;
+     fuchsia = true;

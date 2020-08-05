@@ -3,6 +3,7 @@
 set -eo pipefail
 
 # build backend
+bash ./backend/generate.sh # generate Cargo.nix
 nix-build backend/Dockerfile.nix
 docker load -i result
 docker push pandaman64/oekaki-backend:latest
