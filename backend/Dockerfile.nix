@@ -3,8 +3,7 @@ let
   backend = import ./backend.nix { inherit sources; };
   pkgs = import sources.nixpkgs {};
 in
-  with pkgs;
-  dockerTools.buildImage {
+  pkgs.dockerTools.buildImage {
     name = "pandaman64/oekaki-backend";
     tag = "latest";
 

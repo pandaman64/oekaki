@@ -23,6 +23,18 @@
         "url": "https://github.com/nmattia/niv/archive/303f442c43f918bc43400ab4a0b662a82ca7748b.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "nix-npm-buildpackage": {
+        "branch": "master",
+        "description": "Build nix packages that use npm/yarn",
+        "homepage": "",
+        "owner": "serokell",
+        "repo": "nix-npm-buildpackage",
+        "rev": "2591badeb226a9352b207207dea85444ca59aae3",
+        "sha256": "1309xjmr2nwz0ajaw6n6pr3h5y90x2ryv6j2ipcnch0g37r75fm6",
+        "type": "tarball",
+        "url": "https://github.com/serokell/nix-npm-buildpackage/archive/2591badeb226a9352b207207dea85444ca59aae3.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "nixpkgs": {
         "branch": "nixpkgs-unstable",
         "description": "A read-only mirror of NixOS/nixpkgs tracking the released channels. Send issues and PRs to",
