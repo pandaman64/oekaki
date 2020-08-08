@@ -4,10 +4,42 @@ import { useRouter } from 'next/router'
 import OekakiCanvas from '../../components/canvas'
 import { v4 } from 'uuid'
 import useOperation from '../../lib/useOperation'
-import { Operation, Path } from '../../lib/operation'
+import { Operation } from '../../lib/operation'
 import axios from 'axios'
 import useSWR from 'swr'
 import { useDrawTracker } from '../../lib/drawTracker'
+import { Collapse } from 'react-collapse'
+import usePaths, { RenderPath } from '../../lib/usePaths'
+import { SketchPicker } from 'react-color'
+
+function RenderPathComponent({ path }: { path: RenderPath }): ReactElement {
+  const key = `${path.ts}@${path.user_id}`
+  const [isOpened, setIsOpened] = useState(false)
+  const [isDeleted, setIsDeleted] = useState(false)
+  const [color, setColor] = useState('#000')
+
+  return (
+    <li key={key}>
+      <input
+        type="checkbox"
+        checked={isOpened}
+        onChange={(e) => setIsOpened(e.currentTarget.checked)}
+      />
+      {`${path.ts}@${path.user_id}`}
+      <Collapse isOpened={isOpened} title={key}>
+        <div>
+          消す:
+          <input
+            type="checkbox"
+            checked={isDeleted}
+            onChange={(e) => setIsDeleted(e.currentTarget.checked)}
+          />
+        </div>
+        <SketchPicker color={color} onChange={(color) => setColor(color.hex)} />
+      </Collapse>
+    </li>
+  )
+}
 
 function useWindowResize(): [number, number] {
   const [dimensions, setDimensions] = useState<[number, number]>([0, 0])
@@ -52,16 +84,7 @@ export default function Room(): ReactElement {
   }, [container, windowDimensions])
 
   const [opCache, opCommandDispatcher] = useOperation()
-  const opPaths = useMemo(() => {
-    function pred(op: Operation): op is Path {
-      if (op.opcode === 'path') {
-        return true
-      } else {
-        return false
-      }
-    }
-    return opCache.weave.filter(pred).map((op) => op.payload)
-  }, [opCache])
+  const opPaths = usePaths(opCache)
   const { data: weave } = useSWR<Operation[]>(
     room_id === undefined ? null : `/api/rooms/${room_id}/operations`,
     (url: string) => axios.get(url).then((res) => res.data),
@@ -122,10 +145,12 @@ export default function Room(): ReactElement {
         flexFlow: 'column nowrap',
       }}
     >
-      <div style={{
-        display: 'flex',
-        flexFlow: 'row nowrap'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          flexFlow: 'row nowrap',
+        }}
+      >
         <Link href="/">
           <a>back to home</a>
         </Link>
@@ -136,13 +161,25 @@ export default function Room(): ReactElement {
           flex: '1',
         }}
       >
-        <OekakiCanvas
-          width={canvasWidth}
-          height={canvasHeight}
-          opPaths={opPaths}
-          currentPath={currentPath}
-          dispatcher={dispatcher}
-        />
+        <div
+          style={{
+            display: 'flex',
+            flexFlow: 'row nowrap',
+          }}
+        >
+          <OekakiCanvas
+            width={canvasWidth}
+            height={canvasHeight}
+            opPaths={opPaths}
+            currentPath={currentPath}
+            dispatcher={dispatcher}
+          />
+          <ul>
+            {opPaths.map((path) => (
+              <RenderPathComponent path={path} />
+            ))}
+          </ul>
+        </div>
       </div>
       <style global jsx>{`
         html,
