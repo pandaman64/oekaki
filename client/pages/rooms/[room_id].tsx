@@ -122,10 +122,14 @@ export default function Room(): ReactElement {
         flexFlow: 'column nowrap',
       }}
     >
-      <div>{`room id is ${router.query.room_id}`}</div>
-      <Link href="/">
-        <a>back to home</a>
-      </Link>
+      <div style={{
+        display: 'flex',
+        flexFlow: 'row nowrap'
+      }}>
+        <Link href="/">
+          <a>back to home</a>
+        </Link>
+      </div>
       <div
         ref={container}
         style={{
@@ -135,7 +139,6 @@ export default function Room(): ReactElement {
         <OekakiCanvas
           width={canvasWidth}
           height={canvasHeight}
-          user_id={user_id}
           opPaths={opPaths}
           currentPath={currentPath}
           dispatcher={dispatcher}
