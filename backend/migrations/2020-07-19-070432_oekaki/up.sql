@@ -23,5 +23,5 @@ create table operations (
     parent_ts bigint not null,
     opcode text not null,
     payload jsonb not null,
-    unique (user_id, ts)
+    unique (room_id, user_id, ts)
 );

@@ -10,7 +10,7 @@ type RoomProps = {
 }
 
 function Room({ room_id }: RoomProps): ReactElement {
-  const ThumbnailInLink = React.forwardRef(function ThumbnailInLink(props) {
+  const ThumbnailInLink = React.forwardRef(function ThumbnailInLink(props, ref) {
     const onClick: () => void = (props as any).onClick
     return <Thumbnail room_id={room_id} width={300} height={200} onClick={onClick} />
   })

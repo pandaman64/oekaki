@@ -3,7 +3,7 @@ use crate::schema::*;
 use serde_json::Value;
 use uuid::Uuid;
 
-#[derive(Queryable, Deserialize, Serialize)]
+#[derive(Clone, Queryable, Deserialize, Serialize)]
 pub struct Operation {
     pub id: i64,
     pub room_id: i64,

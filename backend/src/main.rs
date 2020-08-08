@@ -11,6 +11,7 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use rocket::response::Debug;
 use rocket_contrib::json::Json;
+use std::collections::HashMap;
 use uuid::Uuid;
 
 mod draw;
@@ -72,16 +73,62 @@ fn new_path(room_id: i64, data: Json<Path>) -> Result<(), Debug<Error>> {
     Ok(())
 }
 
+// Server UUID: 8aae574e-50b7-4978-86f5-a2ba7cf3b12e
+const SERVER_USER_ID: &str = "8aae574e-50b7-4978-86f5-a2ba7cf3b12e";
+
+fn preorder_traversal(
+    operations: &[operation::Operation],
+    edges: &[Vec<usize>],
+    root_index: usize,
+    ret: &mut Vec<operation::Operation>,
+) {
+    // first, visit the root
+    ret.push(operations[root_index].clone());
+
+    // sort children in descending order and visit them
+    let mut tos = edges[root_index].clone();
+    tos.sort_unstable_by(|&left, &right| {
+        operations[right]
+            .ts
+            .cmp(&operations[left].ts)
+            .then_with(|| operations[right].user_id.cmp(&operations[left].user_id))
+    });
+    for &to in tos.iter() {
+        preorder_traversal(&operations, edges, to, ret)
+    }
+}
+
 #[get("/rooms/<room_id>/operations")]
 fn get_operations(room_id: i64) -> Result<Json<Vec<operation::Operation>>, Debug<Error>> {
+    use std::str::FromStr;
     let conn = database_connection()?;
 
     let operations = schema::operations::table
         .filter(schema::operations::dsl::room_id.eq(room_id))
+        .order(schema::operations::dsl::id.asc())
         .load::<operation::Operation>(&conn)
         .map_err(Error::from)?;
 
-    Ok(Json(operations))
+    // reconstruct a weave
+    let mut id_to_index: HashMap<(Uuid, i64), usize> = HashMap::new();
+    for (idx, op) in operations.iter().enumerate() {
+        id_to_index.insert((op.user_id, op.ts), idx);
+    }
+    let mut edges = vec![vec![]; operations.len()];
+    for op in operations.iter() {
+        if op.user_id != op.parent_user_id || op.ts != op.parent_ts {
+            let &parent_index = id_to_index.get(&(op.parent_user_id, op.parent_ts)).unwrap();
+            let &child_index = id_to_index.get(&(op.user_id, op.ts)).unwrap();
+            edges[parent_index].push(child_index)
+        }
+    }
+    let &root_index = id_to_index
+        .get(&(Uuid::from_str(SERVER_USER_ID).unwrap(), 1))
+        .unwrap();
+    let mut weave = vec![];
+    preorder_traversal(&operations, &edges, root_index, &mut weave);
+
+    Ok(Json(weave))
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -130,11 +177,31 @@ fn new_room() -> Result<Json<i64>, Debug<Error>> {
 
     let conn = database_connection()?;
 
-    let room = diesel::insert_into(schema::rooms::table)
-        .default_values()
-        .returning(dsl::id)
-        .get_result::<i64>(&conn)
-        .map_err(Error::from)?;
+    let room = conn.transaction::<i64, Error, _>(|| {
+        use std::str::FromStr;
+
+        // create a new room
+        let room = diesel::insert_into(schema::rooms::table)
+            .default_values()
+            .returning(dsl::id)
+            .get_result::<i64>(&conn)
+            .map_err(Error::from)?;
+
+        // insert root node
+        diesel::insert_into(schema::operations::table)
+            .values(&operation::NewOperation {
+                room_id: room,
+                opcode: "root".into(),
+                payload: serde_json::Value::Object(Default::default()),
+                user_id: Uuid::from_str(SERVER_USER_ID).unwrap(),
+                ts: 1,
+                parent_user_id: Uuid::from_str(SERVER_USER_ID).unwrap(),
+                parent_ts: 1,
+            })
+            .execute(&conn)?;
+
+        Ok(room)
+    })?;
 
     Ok(Json(room))
 }
@@ -166,7 +233,7 @@ fn rocket() -> rocket::Rocket {
             Ok(()) => {
                 ok = true;
                 break;
-            },
+            }
             Err(e) => {
                 eprintln!("{:?}", e);
                 std::thread::sleep(std::time::Duration::from_secs(3));

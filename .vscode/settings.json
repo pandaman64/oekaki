@@ -1,7 +1,4 @@
 {
-    "editor.formatOnSave": false,
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
-    },
+    "editor.formatOnSave": true,
     "rust.rust-analyzer.path": "rust-analyzer"
 }

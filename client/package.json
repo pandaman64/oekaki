@@ -9,12 +9,14 @@
   },
   "dependencies": {
     "@types/styled-jsx": "^2.2.8",
+    "@types/uuid": "^8.0.1",
     "axios": "^0.19.2",
     "next": "9.4.4",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "styled-jsx": "^3.3.0",
-    "swr": "^0.2.3"
+    "swr": "^0.2.3",
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
     "@types/node": "^14.0.23",

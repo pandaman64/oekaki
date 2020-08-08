@@ -1,7 +1,8 @@
-import React, { ReactElement, useRef, useEffect, useState } from 'react'
+import React, { ReactElement, useRef, useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import OekakiCanvas from '../../components/canvas'
+import { v4 } from 'uuid'
 
 function useWindowResize(): [number, number] {
   const [dimensions, setDimensions] = useState<[number, number]>([0, 0])
@@ -27,6 +28,9 @@ export default function Room(): ReactElement {
   const [canvasWidth, setCanvasWidth] = useState(640)
   const [canvasHeight, setCanvasHeight] = useState(480)
   const windowDimensions = useWindowResize()
+  // hack, may change
+  const user_id = useMemo(() => v4(), [])
+  console.log('room user id', user_id)
 
   useEffect(() => {
     if (container.current != null) {
@@ -64,6 +68,7 @@ export default function Room(): ReactElement {
           room_id={parseInt(router.query.room_id as string)}
           width={canvasWidth}
           height={canvasHeight}
+          user_id={user_id}
         />
       </div>
       <style global jsx>{`
