@@ -90,12 +90,7 @@ export function merge(left: OpCache, right: OpCache): OpCache {
   let leftIndex = 0
   let rightIndex = 0
 
-  console.log('left')
-  console.log(left.weave)
-  console.log('right')
-  console.log(right.weave)
   while (leftIndex < left.weave.length || rightIndex < right.weave.length) {
-    console.log(leftIndex, rightIndex)
     if (leftIndex == left.weave.length) {
       merged.push(right.weave[rightIndex])
       rightIndex++
@@ -198,7 +193,6 @@ export default function useOperation(): [OpCache, Dispatch<Command>] {
     ],
     ts: 2,
   })
-  console.log(opCache)
 
   return [opCache, dispatcher]
 }

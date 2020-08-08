@@ -7,6 +7,12 @@ export default async function (req: NextApiRequest, res: NextApiResponse): Promi
     query: { room_id },
   } = req
   const url = `${api}/rooms/${room_id}/operations`
+  console.log(url)
+
+  if (room_id === undefined) {
+    res.status(404).end()
+    return
+  }
 
   switch (req.method) {
     case 'GET':
