@@ -54,4 +54,14 @@ export type Path = OpInterface & {
   payload: Position[]
 }
 
-export type Operation = Root | Path
+export type ChangeColor = OpInterface & {
+  opcode: 'color'
+  payload: string
+}
+
+export type Delete = OpInterface & {
+  opcode: 'delete'
+  payload: unknown
+}
+
+export type Operation = Root | Path | ChangeColor | Delete
