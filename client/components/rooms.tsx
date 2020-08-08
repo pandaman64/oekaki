@@ -1,18 +1,43 @@
-import React, { ReactElement } from 'react'
+import React, { ReactElement, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import useSWR from 'swr'
 import Link from 'next/link'
 import Thumbnail from './thumbnail'
+import useOperation from '../lib/useOperation'
+import usePaths from '../lib/usePaths'
+import { Operation } from '../lib/operation'
 
 type RoomProps = {
   room_id: number
 }
 
 function Room({ room_id }: RoomProps): ReactElement {
+  const [opCache, opCommandDispatcher] = useOperation()
+  const opPaths = usePaths(opCache)
+  const { data: weave } = useSWR<Operation[]>(
+    room_id === undefined ? null : `/api/rooms/${room_id}/operations`,
+    (url: string) => axios.get(url).then((res) => res.data),
+    {
+      refreshInterval: 1000,
+    }
+  )
+  useEffect(() => {
+    if (weave !== undefined) {
+      const ts = weave.reduce((accum, op) => Math.max(accum, op.ts), 1)
+      opCommandDispatcher({
+        type: 'merge',
+        cache: {
+          weave,
+          ts,
+        },
+      })
+    }
+  }, [weave])
+
   const ThumbnailInLink = React.forwardRef(function ThumbnailInLink(props, ref) {
     const onClick: () => void = (props as any).onClick
-    return <Thumbnail room_id={room_id} width={300} height={200} onClick={onClick} />
+    return <Thumbnail width={300} height={200} opPaths={opPaths} onClick={onClick} />
   })
   return (
     <>

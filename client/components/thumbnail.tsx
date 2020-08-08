@@ -8,25 +8,32 @@ type Position = {
 }
 
 type ThumbnailProps = {
-  room_id: number
   width: number
   height: number
+  opPaths: Position[][]
   onClick: () => void | null
 }
 
 export default function Thumbnail({
-  room_id,
   width,
   height,
+  opPaths,
   onClick,
 }: ThumbnailProps): ReactElement {
   const canvas = useRef<HTMLCanvasElement>(null)
-  const { data: paths } = useSWR<Position[][]>(`/api/rooms/${room_id}/path`, (url: string) =>
-    axios.get(url).then((res) => res.data)
-  )
 
-  // TODO: specify data dependency
   useEffect(() => {
+    function strokePath(ctx: CanvasRenderingContext2D, path: Position[]) {
+      if (path.length > 0) {
+        ctx.beginPath()
+        ctx.moveTo(path[0].x * width, path[0].y * height)
+        path.forEach((pos) => {
+          ctx.lineTo(pos.x * width, pos.y * height)
+        })
+        ctx.stroke()
+      }
+    }
+
     if (canvas.current != null) {
       const ctx = canvas.current.getContext('2d')
       if (ctx != null) {
@@ -34,16 +41,7 @@ export default function Thumbnail({
 
         // draw determined? paths
         ctx.strokeStyle = 'black'
-        paths?.forEach((path) => {
-          if (path.length > 0) {
-            ctx.beginPath()
-            ctx.moveTo(path[0].x * width, path[0].y * height)
-            path.forEach((pos) => {
-              ctx.lineTo(pos.x * width, pos.y * height)
-            })
-            ctx.stroke()
-          }
-        })
+        opPaths.forEach((path) => strokePath(ctx, path))
       }
     }
   })

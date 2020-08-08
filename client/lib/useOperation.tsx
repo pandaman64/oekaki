@@ -52,7 +52,7 @@ class CausalTree {
 }
 */
 
-type OpCache = {
+export type OpCache = {
   // An array of operations, where the elements are ordered by the pre-order traversal of the tree
   // where the most recent child is traversed first
   weave: Operation[]

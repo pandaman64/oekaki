@@ -13,6 +13,10 @@ export interface OpInterface {
   parent_ts: number
 }
 
+export function operationKey(op: OpInterface): string {
+  return `${op.ts}@${op.user_id}`
+}
+
 type OpOrder = 'less' | 'equal' | 'greater'
 
 export function compareOpImpl(
