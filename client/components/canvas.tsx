@@ -34,10 +34,16 @@ interface EndDraw {
   pos: Position
 }
 
-type CurrentPath = Position[]
-type Command = StartDraw | Drawing | EndDraw
+// done with complete path
+interface Done {
+  type: 'done'
+}
 
-function useDrawTracker(cb: (path: Position[]) => void): [CurrentPath, React.Dispatch<Command>] {
+type CurrentPath = Position[]
+type Command = StartDraw | Drawing | EndDraw | Done
+
+function useDrawTracker(): [CurrentPath, Position[] | null, React.Dispatch<Command>] {
+  const [completePath, setCompletePath] = useState<Position[] | null>(null)
   function update(state: CurrentPath, command: Command): CurrentPath {
     switch (command.type) {
       case 'start':
@@ -51,14 +57,18 @@ function useDrawTracker(cb: (path: Position[]) => void): [CurrentPath, React.Dis
         const post_state = state.slice()
         if (post_state.length >= 1) {
           post_state.push(command.pos)
-          cb(post_state)
+          setCompletePath(post_state)
         }
         return []
       }
+      case 'done':
+        setCompletePath(null)
+        return state
     }
   }
+  const [state, dispatcher] = useReducer(update, [])
 
-  return useReducer(update, [])
+  return [state, completePath, dispatcher]
 }
 
 type OekakiCanvasProps = {
@@ -77,14 +87,6 @@ export default function OekakiCanvas({
   console.log('canvas id', user_id)
   const canvas = useRef<HTMLCanvasElement>(null)
   const [drawing, setDrawing] = useState<boolean>(false)
-  // TODO: I don't know why room_id can be a NaN
-  const { data: paths } = useSWR<Position[][]>(
-    Number.isNaN(room_id) ? null : `/api/rooms/${room_id}/path`,
-    (url: string) => axios.get(url).then((res) => res.data),
-    {
-      refreshInterval: 200,
-    }
-  )
 
   const [opCache, opCommandDispatcher] = useOperation()
   const opPaths = useMemo(() => {
@@ -117,33 +119,29 @@ export default function OekakiCanvas({
     }
   }, [weave])
 
-  // this dispatcher should be called only in event handlers
-  const [currentPath, dispatcher] = useDrawTracker((p) => {
-    async function postNewPath() {
-      await axios.post(`/api/rooms/${room_id}/new_path`, {
-        path: p,
-      })
-    }
-
+  const [currentPath, completePath, dispatcher] = useDrawTracker()
+  useEffect(() => {
     async function postOperations() {
       await axios.post(`/api/rooms/${room_id}/operations`, opCache.weave)
     }
 
-    opCommandDispatcher({
-      type: 'add',
-      op: {
-        opcode: 'path',
-        payload: p,
+    if (completePath !== null) {
+      opCommandDispatcher({
+        type: 'add',
+        op: {
+          opcode: 'path',
+          payload: completePath,
 
-        parent_user_id: opCache.weave[0].user_id,
-        parent_ts: opCache.weave[0].ts,
-        user_id,
-        ts: opCache.ts + 1,
-      },
-    })
-    postNewPath()
-    postOperations()
-  })
+          parent_user_id: opCache.weave[0].user_id,
+          parent_ts: opCache.weave[0].ts,
+          user_id,
+          ts: opCache.ts + 1,
+        },
+      })
+      postOperations()
+      dispatcher({ type: 'done' })
+    }
+  }, [completePath])
 
   // TODO: specify data dependency
   useEffect(() => {
@@ -158,7 +156,6 @@ export default function OekakiCanvas({
       }
     }
 
-    console.log(paths)
     if (canvas.current != null) {
       const ctx = canvas.current.getContext('2d')
       if (ctx != null) {
