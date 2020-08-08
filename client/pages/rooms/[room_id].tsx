@@ -30,8 +30,6 @@ function useWindowResize(): [number, number] {
 export default function Room(): ReactElement {
   const router = useRouter()
   const room_id = router.query.room_id
-  console.log('query room id', room_id)
-  console.log(room_id === undefined ? null : `/api/rooms/${room_id}/operations`)
   const container = useRef<HTMLDivElement>(null)
   const [canvasWidth, setCanvasWidth] = useState(640)
   const [canvasHeight, setCanvasHeight] = useState(480)

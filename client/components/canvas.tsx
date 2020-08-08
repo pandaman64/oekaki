@@ -59,7 +59,7 @@ export default function OekakiCanvas({
         strokePath(ctx, currentPath)
       }
     }
-  }, [canvas, opPaths, currentPath])
+  })
 
   return (
     <canvas
