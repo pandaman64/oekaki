@@ -2,8 +2,12 @@ import { useMemo } from 'react'
 import { Operation, Path, Position } from './operation'
 import { OpCache } from './useOperation'
 
-export default function usePaths(opCache: OpCache): Position[][] {
-  const opPaths = useMemo(() => {
+export type RenderPath = {
+  path: Position[]
+}
+
+export default function usePaths(opCache: OpCache): RenderPath[] {
+  const paths = useMemo(() => {
     function pred(op: Operation): op is Path {
       if (op.opcode === 'path') {
         return true
@@ -11,8 +15,10 @@ export default function usePaths(opCache: OpCache): Position[][] {
         return false
       }
     }
-    return opCache.weave.filter(pred).map((op) => op.payload)
+    return opCache.weave.filter(pred).map((path) => ({
+      path: path.payload,
+    }))
   }, [opCache])
 
-  return opPaths
+  return paths
 }

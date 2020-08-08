@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, ReactElement } from 'react'
-import axios from 'axios'
-import useSWR from 'swr'
+import { RenderPath } from '../lib/usePaths'
 
 type Position = {
   x: number
@@ -10,7 +9,7 @@ type Position = {
 type ThumbnailProps = {
   width: number
   height: number
-  opPaths: Position[][]
+  opPaths: RenderPath[]
   onClick: () => void | null
 }
 
@@ -41,7 +40,7 @@ export default function Thumbnail({
 
         // draw determined? paths
         ctx.strokeStyle = 'black'
-        opPaths.forEach((path) => strokePath(ctx, path))
+        opPaths.forEach((path) => strokePath(ctx, path.path))
       }
     }
   })

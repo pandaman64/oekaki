@@ -1,6 +1,7 @@
 import React, { useRef, useState, ReactElement, useEffect } from 'react'
 import { CurrentPath, Command } from '../lib/drawTracker'
 import { Position } from '../lib/position'
+import { RenderPath } from '../lib/usePaths'
 
 type MouseEvent = React.MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>
 
@@ -15,8 +16,7 @@ function computeMousePosition(e: MouseEvent): Position {
 type OekakiCanvasProps = {
   width: number
   height: number
-  user_id: string
-  opPaths: Position[][]
+  opPaths: RenderPath[]
   currentPath: CurrentPath
   dispatcher: React.Dispatch<Command>
 }
@@ -24,12 +24,10 @@ type OekakiCanvasProps = {
 export default function OekakiCanvas({
   width,
   height,
-  user_id,
   opPaths,
   currentPath,
   dispatcher,
 }: OekakiCanvasProps): ReactElement {
-  console.log('canvas id', user_id)
   const canvas = useRef<HTMLCanvasElement>(null)
   const [drawing, setDrawing] = useState<boolean>(false)
 
@@ -52,7 +50,7 @@ export default function OekakiCanvas({
 
         // draw determined? paths
         ctx.strokeStyle = 'black'
-        opPaths.forEach((path) => strokePath(ctx, path))
+        opPaths.forEach((path) => strokePath(ctx, path.path))
 
         // draw current path
         ctx.strokeStyle = 'red'
