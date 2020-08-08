@@ -125,7 +125,10 @@ export default function OekakiCanvas({
       })
     }
 
-    postNewPath()
+    async function postOperations() {
+      await axios.post(`/api/rooms/${room_id}/operations`, opCache.weave)
+    }
+
     opCommandDispatcher({
       type: 'add',
       op: {
@@ -138,6 +141,8 @@ export default function OekakiCanvas({
         ts: opCache.ts + 1,
       },
     })
+    postNewPath()
+    postOperations()
   })
 
   // TODO: specify data dependency

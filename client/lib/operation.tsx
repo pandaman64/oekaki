@@ -5,7 +5,7 @@ export type Position = {
 
 export interface OpInterface {
   opcode: string
-  payload: Record<string, unknown>
+  payload: unknown
 
   user_id: string
   ts: number
@@ -43,13 +43,9 @@ export function isIdentical(left: OpInterface, right: OpInterface): boolean {
   return left.user_id === right.user_id && left.ts === right.ts
 }
 
-type EmptyObject = {
-  [K in string]: never
-}
-
 export type Root = OpInterface & {
   opcode: 'root'
-  payload: EmptyObject
+  payload: unknown
 }
 
 export type Path = OpInterface & {

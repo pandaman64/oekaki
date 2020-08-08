@@ -142,29 +142,28 @@ struct NewOperation {
 }
 
 #[post("/rooms/<room_id>/operations", data = "<data>")]
-fn post_operations(room_id: i64, data: Json<NewOperation>) -> Result<(), Debug<Error>> {
+fn post_operations(room_id: i64, data: Json<Vec<NewOperation>>) -> Result<(), Debug<Error>> {
     eprintln!("room_id = {}, data = {:?}", room_id, data);
-    let NewOperation {
-        user_id,
-        ts,
-        parent_user_id,
-        parent_ts,
-        opcode,
-        payload,
-    } = data.0;
 
     let conn = database_connection()?;
 
     diesel::insert_into(schema::operations::table)
-        .values(&operation::NewOperation {
-            room_id,
-            user_id,
-            ts,
-            parent_user_id,
-            parent_ts,
-            opcode,
-            payload,
-        })
+        .values(
+            &data
+                .0
+                .into_iter()
+                .map(|op| operation::NewOperation {
+                    room_id,
+                    opcode: op.opcode,
+                    payload: op.payload,
+                    user_id: op.user_id,
+                    ts: op.ts,
+                    parent_user_id: op.parent_user_id,
+                    parent_ts: op.parent_ts,
+                })
+                .collect::<Vec<_>>(),
+        )
+        .on_conflict_do_nothing()
         .execute(&conn)
         .map_err(Error::from)?;
 
