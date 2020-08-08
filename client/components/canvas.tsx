@@ -149,7 +149,6 @@ export default function OekakiCanvas({
     postOperations()
   }, [opCache])
 
-  // TODO: specify data dependency
   useEffect(() => {
     function strokePath(ctx: CanvasRenderingContext2D, path: Position[]) {
       if (path.length > 0) {
@@ -176,7 +175,7 @@ export default function OekakiCanvas({
         strokePath(ctx, currentPath)
       }
     }
-  })
+  }, [canvas, opPaths, currentPath])
 
   return (
     <canvas
