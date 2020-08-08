@@ -121,9 +121,6 @@ export default function OekakiCanvas({
 
   const [currentPath, completePath, dispatcher] = useDrawTracker()
   useEffect(() => {
-    async function postOperations() {
-      await axios.post(`/api/rooms/${room_id}/operations`, opCache.weave)
-    }
 
     if (completePath !== null) {
       opCommandDispatcher({
@@ -138,10 +135,19 @@ export default function OekakiCanvas({
           ts: opCache.ts + 1,
         },
       })
-      postOperations()
       dispatcher({ type: 'done' })
     }
   }, [completePath])
+
+  // this can be inefficient as opCache changes when incorporating incoming changes,
+  // which doesn't require reposting
+  useEffect(() => {
+    async function postOperations() {
+      await axios.post(`/api/rooms/${room_id}/operations`, opCache.weave)
+    }
+
+    postOperations()
+  }, [opCache])
 
   // TODO: specify data dependency
   useEffect(() => {
