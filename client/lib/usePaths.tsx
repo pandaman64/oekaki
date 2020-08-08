@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Operation, Path, Position } from './operation'
+import { Position } from './position'
+import { Operation, Path } from './operation'
 import { OpCache } from './useOperation'
 
 export type RenderPath = {

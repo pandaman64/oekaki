@@ -1,7 +1,4 @@
-export type Position = {
-  x: number
-  y: number
-}
+import { Position } from './position'
 
 export interface OpInterface {
   opcode: string
