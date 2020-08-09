@@ -12,6 +12,7 @@ import { Collapse } from 'react-collapse'
 import { RenderPath } from '../../lib/renderPath'
 import { SketchPicker, RGBColor } from 'react-color'
 import weaveTraversal from '../../lib/weaveTraversal'
+import { accumulateVotes } from '../../lib/result'
 
 type RenderPathComponentProps = {
   path: RenderPath
@@ -230,17 +231,13 @@ export default function Room(): ReactElement {
               }}
             >
               {renderPaths.map((path) => {
-                const votes = path.show?.latestVotes?.values()
+                const votes = path.show?.latestVotes
                 let showVotes = 0
                 let noShowVotes = 0
                 if (votes !== undefined) {
-                  for (const vote of votes) {
-                    if (vote.vote) {
-                      showVotes++
-                    } else {
-                      noShowVotes++
-                    }
-                  }
+                  const { show, noShow } = accumulateVotes(votes)
+                  showVotes = show
+                  noShowVotes = noShow
                 }
 
                 return (

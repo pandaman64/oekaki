@@ -30,3 +30,27 @@ export type Vote = {
 export type ShowResult = {
   latestVotes: Map<string, Vote>
 }
+
+export function accumulateVotes(
+  latestVotes: Map<string, Vote>
+): {
+  show: number
+  noShow: number
+} {
+  const votes = latestVotes.values()
+  let show = 0
+  let noShow = 0
+  if (votes !== undefined) {
+    for (const vote of votes) {
+      if (vote.vote) {
+        show++
+      } else {
+        noShow++
+      }
+    }
+  }
+  return {
+    show,
+    noShow,
+  }
+}
