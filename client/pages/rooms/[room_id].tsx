@@ -15,14 +15,29 @@ import weaveTraversal from '../../lib/weaveTraversal'
 
 type RenderPathComponentProps = {
   path: RenderPath
+  showVotes: number
+  noShowVotes: number
+  onVote: (vote: boolean) => void
   onChangeColor: (color: RGBColor) => void
 }
 
-function RenderPathComponent({ path, onChangeColor }: RenderPathComponentProps): ReactElement {
+function RenderPathComponent({
+  path,
+  showVotes,
+  noShowVotes,
+  onVote,
+  onChangeColor,
+}: RenderPathComponentProps): ReactElement {
   const key = `${path.ts}@${path.user_id}`
   const [isOpened, setIsOpened] = useState(false)
-  const [isDeleted, setIsDeleted] = useState(false)
   const [color, setColor] = useState<RGBColor>({ b: 0, g: 0, r: 0, a: 1 })
+  const [vote, setVote] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (vote !== null) {
+      onVote(vote)
+    }
+  }, [vote])
 
   return (
     <li key={key}>
@@ -34,12 +49,28 @@ function RenderPathComponent({ path, onChangeColor }: RenderPathComponentProps):
       {`${path.ts}@${path.user_id}`}
       <Collapse isOpened={isOpened} title={key}>
         <div>
-          消す:
-          <input
-            type="checkbox"
-            checked={isDeleted}
-            onChange={(e) => setIsDeleted(e.currentTarget.checked)}
-          />
+          写す価値:
+          <select
+            name={key}
+            value={vote === null ? '' : vote ? 'yes' : 'no'}
+            onChange={(e) => {
+              switch (e.currentTarget.value) {
+                case 'yes':
+                  setVote(true)
+                  break
+                case 'no':
+                  setVote(false)
+                  break
+                default:
+                  setVote(null)
+                  break
+              }
+            }}
+          >
+            {vote === null ? <option value="">興味がない</option> : null}
+            <option value="yes">{`アリ (${showVotes})`}</option>
+            <option value="no">{`ナシ (${noShowVotes})`}</option>
+          </select>
         </div>
         {
           isOpened ? (
@@ -198,28 +229,62 @@ export default function Room(): ReactElement {
                 overflowY: 'scroll',
               }}
             >
-              {renderPaths.map((path) => (
-                <RenderPathComponent
-                  key={`${path.ts}@${path.user_id}`}
-                  path={path}
-                  onChangeColor={(color) => {
-                    const parent_user_id = path.color?.latestUserId ?? path.user_id
-                    const parent_ts = path.color?.latestTs ?? path.ts
-                    opCommandDispatcher({
-                      type: 'add',
-                      op: {
-                        opcode: 'color',
-                        payload: `rgba(${color.r},${color.g},${color.b},${color.a ?? 1})`,
+              {renderPaths.map((path) => {
+                const votes = path.show?.latestVotes?.values()
+                let showVotes = 0
+                let noShowVotes = 0
+                if (votes !== undefined) {
+                  for (const vote of votes) {
+                    if (vote.vote) {
+                      showVotes++
+                    } else {
+                      noShowVotes++
+                    }
+                  }
+                }
 
-                        user_id,
-                        ts: opCache.ts + 1,
-                        parent_user_id,
-                        parent_ts,
-                      },
-                    })
-                  }}
-                />
-              ))}
+                return (
+                  <RenderPathComponent
+                    key={`${path.ts}@${path.user_id}`}
+                    path={path}
+                    showVotes={showVotes}
+                    noShowVotes={noShowVotes}
+                    onVote={(vote) => {
+                      const latestVote = path.show?.latestVotes?.get(user_id)
+                      const parent_user_id = latestVote !== undefined ? user_id : path.user_id
+                      const parent_ts = latestVote?.ts ?? path.ts
+                      opCommandDispatcher({
+                        type: 'add',
+                        op: {
+                          opcode: 'show',
+                          payload: vote,
+
+                          user_id,
+                          ts: opCache.ts + 1,
+                          parent_user_id,
+                          parent_ts,
+                        },
+                      })
+                    }}
+                    onChangeColor={(color) => {
+                      const parent_user_id = path.color?.latestUserId ?? path.user_id
+                      const parent_ts = path.color?.latestTs ?? path.ts
+                      opCommandDispatcher({
+                        type: 'add',
+                        op: {
+                          opcode: 'color',
+                          payload: `rgba(${color.r},${color.g},${color.b},${color.a ?? 1})`,
+
+                          user_id,
+                          ts: opCache.ts + 1,
+                          parent_user_id,
+                          parent_ts,
+                        },
+                      })
+                    }}
+                  />
+                )
+              })}
             </ul>
           }
         </div>
