@@ -2,6 +2,7 @@ import React, { useRef, useState, ReactElement, useEffect } from 'react'
 import { CurrentPath, Command } from '../lib/drawTracker'
 import { Position } from '../lib/position'
 import { RenderPath } from '../lib/renderPath'
+import { accumulateVotes } from '../lib/result'
 
 type MouseEvent = React.MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>
 
@@ -50,9 +51,18 @@ export default function OekakiCanvas({
         ctx.clearRect(0, 0, canvas.current.width, canvas.current.height)
 
         // draw determined? paths
-        opPaths.forEach((renderPath) =>
-          strokePath(ctx, renderPath.path, renderPath.color?.latestColor ?? 'black')
-        )
+        opPaths.forEach((renderPath) => {
+          let doShow = true
+          if (renderPath.show !== undefined) {
+            const { show, noShow } = accumulateVotes(renderPath.show.latestVotes)
+            if (show < noShow) {
+              doShow = false
+            }
+          }
+          if (doShow) {
+            strokePath(ctx, renderPath.path, renderPath.color?.latestColor ?? 'black')
+          }
+        })
 
         // draw current path
         strokePath(ctx, currentPath, 'red')
