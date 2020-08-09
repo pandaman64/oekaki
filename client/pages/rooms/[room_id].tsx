@@ -90,7 +90,7 @@ export default function Room(): ReactElement {
       const Y = 2
       const x_ratio = container.current.clientWidth / X
       const y_ratio = container.current.clientHeight / Y
-      const ratio = Math.min(x_ratio, y_ratio) - 10 // 10px margin
+      const ratio = Math.min(x_ratio, y_ratio) - 30 // 30px margin
 
       setCanvasWidth(X * ratio)
       setCanvasHeight(Y * ratio)
@@ -192,7 +192,12 @@ export default function Room(): ReactElement {
             dispatcher={dispatcher}
           />
           {
-            <ul>
+            <ul
+              style={{
+                height: canvasHeight,
+                overflowY: 'scroll',
+              }}
+            >
               {renderPaths.map((path) => (
                 <RenderPathComponent
                   key={`${path.ts}@${path.user_id}`}
