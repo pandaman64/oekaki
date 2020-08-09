@@ -5,7 +5,7 @@ let
   src = pkgs.lib.cleanSourceWith {
     filter = path: type: (pkgs.lib.any (re: builtins.match re path != null) [
       # directories
-      ".*(pages|public|components).*"
+      ".*(pages|public|components|lib).*"
       # top-level config files
       ".*(package.json).*"
       ".*(package-lock.json).*"
