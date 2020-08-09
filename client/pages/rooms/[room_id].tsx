@@ -10,19 +10,19 @@ import useSWR from 'swr'
 import { useDrawTracker } from '../../lib/drawTracker'
 import { Collapse } from 'react-collapse'
 import { RenderPath } from '../../lib/renderPath'
-import { SketchPicker } from 'react-color'
+import { SketchPicker, RGBColor } from 'react-color'
 import weaveTraversal from '../../lib/weaveTraversal'
 
 type RenderPathComponentProps = {
   path: RenderPath
-  onChangeColor: (color: string) => void
+  onChangeColor: (color: RGBColor) => void
 }
 
 function RenderPathComponent({ path, onChangeColor }: RenderPathComponentProps): ReactElement {
   const key = `${path.ts}@${path.user_id}`
   const [isOpened, setIsOpened] = useState(false)
   const [isDeleted, setIsDeleted] = useState(false)
-  const [color, setColor] = useState('#000')
+  const [color, setColor] = useState<RGBColor>({ b: 0, g: 0, r: 0, a: 1 })
 
   return (
     <li key={key}>
@@ -45,8 +45,8 @@ function RenderPathComponent({ path, onChangeColor }: RenderPathComponentProps):
           isOpened ? (
             <SketchPicker
               color={color}
-              onChange={(color) => setColor(color.hex)}
-              onChangeComplete={(color) => onChangeColor(color.hex)}
+              onChange={(color) => setColor(color.rgb)}
+              onChangeComplete={(color) => onChangeColor(color.rgb)}
             />
           ) : null /* color picker is too heavy */
         }
@@ -209,7 +209,7 @@ export default function Room(): ReactElement {
                       type: 'add',
                       op: {
                         opcode: 'color',
-                        payload: color,
+                        payload: `rgba(${color.r},${color.g},${color.b},${color.a ?? 1})`,
 
                         user_id,
                         ts: opCache.ts + 1,
