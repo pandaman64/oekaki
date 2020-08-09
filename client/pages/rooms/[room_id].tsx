@@ -198,6 +198,8 @@ export default function Room(): ReactElement {
                   key={`${path.ts}@${path.user_id}`}
                   path={path}
                   onChangeColor={(color) => {
+                    const parent_user_id = path.color?.latestUserId ?? path.user_id
+                    const parent_ts = path.color?.latestTs ?? path.ts
                     opCommandDispatcher({
                       type: 'add',
                       op: {
@@ -206,8 +208,8 @@ export default function Room(): ReactElement {
 
                         user_id,
                         ts: opCache.ts + 1,
-                        parent_user_id: path.user_id,
-                        parent_ts: path.ts,
+                        parent_user_id,
+                        parent_ts,
                       },
                     })
                   }}
