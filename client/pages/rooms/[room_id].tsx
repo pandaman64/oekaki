@@ -113,7 +113,18 @@ export default function Room(): ReactElement {
   const [canvasHeight, setCanvasHeight] = useState(480)
   const windowDimensions = useWindowResize()
   // hack, may change
-  const user_id = useMemo(() => v4(), [])
+  const [user_id, setUserId] = useState<string | null>(null)
+  useEffect(() => {
+    const KEY = 'pandaman-oekaki-user-id'
+    if (user_id === null) {
+      let newUserId = sessionStorage.getItem(KEY)
+      if (newUserId === null) {
+        newUserId = v4()
+      }
+      window.sessionStorage.setItem(KEY, newUserId)
+      setUserId(newUserId)
+    }
+  }, [user_id])
   console.log('room user id', user_id)
 
   useEffect(() => {
@@ -152,7 +163,7 @@ export default function Room(): ReactElement {
 
   const [currentPath, completePath, dispatcher] = useDrawTracker()
   useEffect(() => {
-    if (completePath !== null) {
+    if (user_id !== null && completePath !== null) {
       opCommandDispatcher({
         type: 'add',
         op: {
@@ -167,7 +178,7 @@ export default function Room(): ReactElement {
       })
       dispatcher({ type: 'done' })
     }
-  }, [completePath])
+  }, [user_id, completePath, opCache])
 
   // this can be inefficient as opCache changes when incorporating incoming changes,
   // which doesn't require reposting
@@ -247,37 +258,41 @@ export default function Room(): ReactElement {
                     showVotes={showVotes}
                     noShowVotes={noShowVotes}
                     onVote={(vote) => {
-                      const latestVote = path.show?.latestVotes?.get(user_id)
-                      const parent_user_id = latestVote !== undefined ? user_id : path.user_id
-                      const parent_ts = latestVote?.ts ?? path.ts
-                      opCommandDispatcher({
-                        type: 'add',
-                        op: {
-                          opcode: 'show',
-                          payload: vote,
+                      if (user_id !== null) {
+                        const latestVote = path.show?.latestVotes?.get(user_id)
+                        const parent_user_id = latestVote !== undefined ? user_id : path.user_id
+                        const parent_ts = latestVote?.ts ?? path.ts
+                        opCommandDispatcher({
+                          type: 'add',
+                          op: {
+                            opcode: 'show',
+                            payload: vote,
 
-                          user_id,
-                          ts: opCache.ts + 1,
-                          parent_user_id,
-                          parent_ts,
-                        },
-                      })
+                            user_id,
+                            ts: opCache.ts + 1,
+                            parent_user_id,
+                            parent_ts,
+                          },
+                        })
+                      }
                     }}
                     onChangeColor={(color) => {
-                      const parent_user_id = path.color?.latestUserId ?? path.user_id
-                      const parent_ts = path.color?.latestTs ?? path.ts
-                      opCommandDispatcher({
-                        type: 'add',
-                        op: {
-                          opcode: 'color',
-                          payload: `rgba(${color.r},${color.g},${color.b},${color.a ?? 1})`,
+                      if (user_id !== null) {
+                        const parent_user_id = path.color?.latestUserId ?? path.user_id
+                        const parent_ts = path.color?.latestTs ?? path.ts
+                        opCommandDispatcher({
+                          type: 'add',
+                          op: {
+                            opcode: 'color',
+                            payload: `rgba(${color.r},${color.g},${color.b},${color.a ?? 1})`,
 
-                          user_id,
-                          ts: opCache.ts + 1,
-                          parent_user_id,
-                          parent_ts,
-                        },
-                      })
+                            user_id,
+                            ts: opCache.ts + 1,
+                            parent_user_id,
+                            parent_ts,
+                          },
+                        })
+                      }
                     }}
                   />
                 )
