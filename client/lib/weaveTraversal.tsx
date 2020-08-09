@@ -1,9 +1,9 @@
 import { Operation } from './operation'
 import { calculateEndPos, isEndPos } from './useOperation'
 import { RenderPath } from './renderPath'
-import { weaveTraversalResult, colorResult, ok, err } from './result'
+import { weaveTraversalResult, ColorResult, ok, err, ShowResult, Vote } from './result'
 
-function doColor(weave: Operation[], index: number): weaveTraversalResult<colorResult> {
+function doColor(weave: Operation[], index: number): weaveTraversalResult<ColorResult> {
   const rootIndex = index
   const root = weave[rootIndex]
   switch (root.opcode) {
@@ -11,7 +11,7 @@ function doColor(weave: Operation[], index: number): weaveTraversalResult<colorR
       // Last-Writer-Win
       // assuming that children is ordered from latest to oldest,
       // we can skip after the first valid color subtree
-      let childrenResult: colorResult | undefined = undefined
+      let childrenResult: ColorResult | undefined = undefined
       index++
       while (index < weave.length && !isEndPos(weave, rootIndex, index)) {
         if (childrenResult === undefined) {
@@ -41,6 +41,52 @@ function doColor(weave: Operation[], index: number): weaveTraversalResult<colorR
   }
 }
 
+// a bit impure (modifying latestVotes)
+function doShow(
+  weave: Operation[],
+  index: number,
+  latestVotes: Map<string, Vote>
+): weaveTraversalResult<ShowResult> {
+  const rootIndex = index
+  const root = weave[rootIndex]
+  switch (root.opcode) {
+    case 'show': {
+      // choose majority. show by default
+      // we choose latest votes for each user
+      // an adversary can impersonate other voters :)
+      const current = latestVotes.get(root.user_id)
+      if (current === undefined || current.ts < root.ts) {
+        latestVotes.set(root.user_id, {
+          ts: root.ts,
+          vote: root.payload,
+        })
+      }
+      index++
+      while (index < weave.length && !isEndPos(weave, rootIndex, index)) {
+        const { endPos, result } = doShow(weave, index, latestVotes)
+        index = endPos
+        if (result !== undefined) {
+          result.latestVotes.forEach((vote, userId) => {
+            const current = latestVotes.get(userId)
+            if (current === undefined || current.ts < vote.ts) {
+              latestVotes.set(userId, vote)
+            }
+          })
+        }
+      }
+      return ok(
+        {
+          latestVotes,
+        },
+        index
+      )
+    }
+    default:
+      console.error('not a delete', root)
+      return err(calculateEndPos(weave, index))
+  }
+}
+
 function doPath(weave: Operation[], index: number): weaveTraversalResult<RenderPath> {
   const rootIndex = index
   const root = weave[rootIndex]
@@ -48,7 +94,9 @@ function doPath(weave: Operation[], index: number): weaveTraversalResult<RenderP
     case 'path': {
       // a path has zero or more color/delete children
       // as color is LWW, we only check first subtree
-      let color: colorResult | undefined = undefined
+      let color: ColorResult | undefined = undefined
+      let latestVotes = new Map<string, Vote>()
+
       index++
       while (index < weave.length && !isEndPos(weave, rootIndex, index)) {
         switch (weave[index].opcode) {
@@ -63,8 +111,14 @@ function doPath(weave: Operation[], index: number): weaveTraversalResult<RenderP
               }
             }
             break
-          case 'delete':
-            index = calculateEndPos(weave, index)
+          case 'show':
+            {
+              const { endPos, result } = doShow(weave, index, latestVotes)
+              index = endPos
+              if (result !== undefined) {
+                latestVotes = result.latestVotes
+              }
+            }
             break
           default:
             console.warn('unexpected operation below path', weave[index])
@@ -77,6 +131,9 @@ function doPath(weave: Operation[], index: number): weaveTraversalResult<RenderP
           user_id: root.user_id,
           ts: root.ts,
           color,
+          show: {
+            latestVotes,
+          },
         },
         index
       )

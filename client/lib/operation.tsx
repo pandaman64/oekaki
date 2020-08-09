@@ -59,9 +59,9 @@ export type ChangeColor = OpInterface & {
   payload: string
 }
 
-export type Delete = OpInterface & {
-  opcode: 'delete'
-  payload: unknown
+export type Show = OpInterface & {
+  opcode: 'show'
+  payload: boolean
 }
 
-export type Operation = Root | Path | ChangeColor | Delete
+export type Operation = Root | Path | ChangeColor | Show

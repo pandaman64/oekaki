@@ -16,8 +16,17 @@ export function err<T>(endPos: number): weaveTraversalResult<T> {
   }
 }
 
-export type colorResult = {
+export type ColorResult = {
   latestColor: string
   latestUserId: string
   latestTs: number
+}
+
+export type Vote = {
+  ts: number
+  vote: boolean
+}
+
+export type ShowResult = {
+  latestVotes: Map<string, Vote>
 }
