@@ -63,9 +63,14 @@ export type OpCache = {
   // yarns: Map<string, Operation[]>;
 }
 
+// returns true if `end` points to past one element of the subtree starting at `index`
+export function isEndPos(weave: Operation[], index: number, end: number): boolean {
+  return end > index && weave[end].parent_ts < weave[index].ts
+}
+
 // given a weave and index of the root of the subtree,
 // return the index past the end of the subtree
-function calculateEndPos(weave: Operation[], index: number): number {
+export function calculateEndPos(weave: Operation[], index: number): number {
   const root = weave[index]
   // find the first element whose parent is sooner than the root
   // if such an element exists, its index is the desired one

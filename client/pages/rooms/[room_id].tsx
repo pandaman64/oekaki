@@ -9,10 +9,16 @@ import axios from 'axios'
 import useSWR from 'swr'
 import { useDrawTracker } from '../../lib/drawTracker'
 import { Collapse } from 'react-collapse'
-import usePaths, { RenderPath } from '../../lib/usePaths'
+import { RenderPath } from '../../lib/renderPath'
 import { SketchPicker } from 'react-color'
+import weaveTraversal from '../../lib/weaveTraversal'
 
-function RenderPathComponent({ path }: { path: RenderPath }): ReactElement {
+type RenderPathComponentProps = {
+  path: RenderPath
+  onChangeColor: (color: string) => void
+}
+
+function RenderPathComponent({ path, onChangeColor }: RenderPathComponentProps): ReactElement {
   const key = `${path.ts}@${path.user_id}`
   const [isOpened, setIsOpened] = useState(false)
   const [isDeleted, setIsDeleted] = useState(false)
@@ -35,7 +41,15 @@ function RenderPathComponent({ path }: { path: RenderPath }): ReactElement {
             onChange={(e) => setIsDeleted(e.currentTarget.checked)}
           />
         </div>
-        <SketchPicker color={color} onChange={(color) => setColor(color.hex)} />
+        {
+          isOpened ? (
+            <SketchPicker
+              color={color}
+              onChange={(color) => setColor(color.hex)}
+              onChangeComplete={(color) => onChangeColor(color.hex)}
+            />
+          ) : null /* color picker is too heavy */
+        }
       </Collapse>
     </li>
   )
@@ -84,7 +98,6 @@ export default function Room(): ReactElement {
   }, [container, windowDimensions])
 
   const [opCache, opCommandDispatcher] = useOperation()
-  const opPaths = usePaths(opCache)
   const { data: weave } = useSWR<Operation[]>(
     room_id === undefined ? null : `/api/rooms/${room_id}/operations`,
     (url: string) => axios.get(url).then((res) => res.data),
@@ -136,6 +149,10 @@ export default function Room(): ReactElement {
     postOperations()
   }, [opCache])
 
+  const renderPaths = useMemo(() => {
+    return weaveTraversal(opCache.weave)
+  }, [opCache])
+
   return (
     <div
       style={{
@@ -170,15 +187,34 @@ export default function Room(): ReactElement {
           <OekakiCanvas
             width={canvasWidth}
             height={canvasHeight}
-            opPaths={opPaths}
+            renderPaths={renderPaths}
             currentPath={currentPath}
             dispatcher={dispatcher}
           />
-          <ul>
-            {opPaths.map((path) => (
-              <RenderPathComponent path={path} />
-            ))}
-          </ul>
+          {
+            <ul>
+              {renderPaths.map((path) => (
+                <RenderPathComponent
+                  key={`${path.ts}@${path.user_id}`}
+                  path={path}
+                  onChangeColor={(color) => {
+                    opCommandDispatcher({
+                      type: 'add',
+                      op: {
+                        opcode: 'color',
+                        payload: color,
+
+                        user_id,
+                        ts: opCache.ts + 1,
+                        parent_user_id: path.user_id,
+                        parent_ts: path.ts,
+                      },
+                    })
+                  }}
+                />
+              ))}
+            </ul>
+          }
         </div>
       </div>
       <style global jsx>{`

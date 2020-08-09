@@ -1,7 +1,7 @@
 import React, { useRef, useState, ReactElement, useEffect } from 'react'
 import { CurrentPath, Command } from '../lib/drawTracker'
 import { Position } from '../lib/position'
-import { RenderPath } from '../lib/usePaths'
+import { RenderPath } from '../lib/renderPath'
 
 type MouseEvent = React.MouseEvent<HTMLCanvasElement, globalThis.MouseEvent>
 
@@ -16,7 +16,7 @@ function computeMousePosition(e: MouseEvent): Position {
 type OekakiCanvasProps = {
   width: number
   height: number
-  opPaths: RenderPath[]
+  renderPaths: RenderPath[]
   currentPath: CurrentPath
   dispatcher: React.Dispatch<Command>
 }
@@ -24,7 +24,7 @@ type OekakiCanvasProps = {
 export default function OekakiCanvas({
   width,
   height,
-  opPaths,
+  renderPaths: opPaths,
   currentPath,
   dispatcher,
 }: OekakiCanvasProps): ReactElement {
@@ -32,7 +32,8 @@ export default function OekakiCanvas({
   const [drawing, setDrawing] = useState<boolean>(false)
 
   useEffect(() => {
-    function strokePath(ctx: CanvasRenderingContext2D, path: Position[]) {
+    function strokePath(ctx: CanvasRenderingContext2D, path: Position[], color: string) {
+      ctx.strokeStyle = color
       if (path.length > 0) {
         ctx.beginPath()
         ctx.moveTo(path[0].x * width, path[0].y * height)
@@ -49,12 +50,12 @@ export default function OekakiCanvas({
         ctx.clearRect(0, 0, canvas.current.width, canvas.current.height)
 
         // draw determined? paths
-        ctx.strokeStyle = 'black'
-        opPaths.forEach((path) => strokePath(ctx, path.path))
+        opPaths.forEach((renderPath) =>
+          strokePath(ctx, renderPath.path, renderPath.color?.latestColor ?? 'black')
+        )
 
         // draw current path
-        ctx.strokeStyle = 'red'
-        strokePath(ctx, currentPath)
+        strokePath(ctx, currentPath, 'red')
       }
     }
   })
