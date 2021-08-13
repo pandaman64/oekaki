@@ -13,7 +13,7 @@
     "@types/styled-jsx": "^2.2.8",
     "@types/uuid": "^8.0.1",
     "axios": "^0.21.1",
-    "next": "9.4.4",
+    "next": "11.1.0",
     "react": "16.13.1",
     "react-collapse": "^5.0.1",
     "react-color": "^2.18.1",
